@@ -22,12 +22,6 @@ COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
 
 WORKDIR /app
 
-# Create persistent data directory for database
-RUN mkdir -p /app/data
-
-# Set database to use persistent storage
-ENV DB_URL="sqlite:///app/data/records.db"
-
 # Copy application code
 COPY app app/
 COPY tests tests/
@@ -41,6 +35,12 @@ RUN pip install --upgrade pip setuptools && uv pip install --system --no-cache-d
     && uv pip install ctranslate2==4.6.0 --system \
     # Clean pip cache and temporary files
     && rm -rf /root/.cache /tmp/*
+
+# Create persistent data directory and set permissions
+RUN mkdir -p /app/data && chmod 755 /app/data
+
+# Set database to use persistent storage
+ENV DB_URL="sqlite:///app/data/records.db"
 
 # Initialize database in persistent location
 RUN python -c "from app.models import Base; from app.db import engine; Base.metadata.create_all(bind=engine); print('Database initialized in persistent storage: /app/data/records.db')"
