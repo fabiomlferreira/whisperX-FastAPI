@@ -1,6 +1,13 @@
-# RunPod Handler for WhisperX FastAPI
+# RunPod Serverless Handler for WhisperX FastAPI
 
-This handler allows you to call your existing WhisperX endpoints from RunPod serverless using `run()` and `runsync()` commands.
+This handler is fully compatible with RunPod serverless architecture. It allows you to call your existing WhisperX endpoints from RunPod serverless using `run()` and `runsync()` commands.
+
+## ✅ RunPod Compatibility
+
+- **Proper RunPod handler signature**: Uses `handler(job)` as required by RunPod
+- **RunPod SDK integration**: Uses `runpod.serverless.start()` to keep container alive
+- **Correct Dockerfile**: Runs `handler.py` instead of just importing and exiting
+- **Local testing**: Includes test script to verify handler before deployment
 
 ## Usage
 
@@ -199,6 +206,36 @@ result = pod.run({
 - The handler automatically handles temporary file cleanup
 - All existing WhisperX functionality is preserved
 - No changes to your existing codebase required
+
+## 🚀 Deployment to RunPod
+
+### 1. Test Locally First
+```bash
+# Test your handler before deployment
+python test_handler_local.py
+```
+
+### 2. Deploy to RunPod
+1. **Use `dockerfile.runpod`** (not the original Dockerfile)
+2. **Set Dockerfile path** to `dockerfile.runpod` in RunPod console
+3. **Build context** should be `.` (root directory)
+4. **Deploy** and wait for container to build
+
+### 3. Test on RunPod
+```bash
+# Test health endpoint
+curl -X POST "https://api.runpod.ai/v2/YOUR_ENDPOINT_ID/runsync" \
+  -H "Content-Type: application/json" \
+  -d '{"input": {"action": "health"}}'
+```
+
+## 🔧 Key Changes Made
+
+1. **Handler signature**: Changed from `handler(event)` to `handler(job)` (RunPod requirement)
+2. **RunPod SDK**: Added `runpod.serverless.start()` to keep container alive
+3. **Dockerfile**: Updated to run `handler.py` instead of just importing
+4. **Requirements**: Added `runpod==1.7.9` package
+5. **Local testing**: Added `test_handler_local.py` for pre-deployment testing
 
 
 Para correr estou a correr o comando  source venv/bin/activate && python test_runpod.py 

@@ -11,6 +11,7 @@ import tempfile
 import time
 from typing import Any, Dict, Optional
 from urllib.parse import urlparse
+import runpod
 
 # Import your existing services and functions
 from app.whisperx_services import process_audio_common, device
@@ -85,16 +86,61 @@ def clean_query_parameters(params_dict):
                 clean_params[key] = value
     return clean_params
 
-def handler(event: Dict[str, Any]) -> Dict[str, Any]:
+def handler(job: Dict[str, Any]) -> Dict[str, Any]:
     """
     Main RunPod handler function that perfectly replicates all FastAPI endpoints.
     
     Args:
-        event: RunPod event containing 'input' and 'action'
+        job: RunPod job containing 'input' and 'id'
     
     Returns:
         Dict containing the result or error
     """
+    try:
+        input_data = job.get('input', {})
+        action = input_data.get('action', 'health')
+        
+        logger.info(f"RunPod handler called with action: {action}")
+        
+        # Route to appropriate function based on action
+        if action == 'speech_to_text':
+            return handle_speech_to_text(input_data)
+        elif action == 'speech_to_text_url':
+            return handle_speech_to_text_url(input_data)
+        elif action == 'service_transcribe':
+            return handle_service_transcribe(input_data)
+        elif action == 'service_align':
+            return handle_service_align(input_data)
+        elif action == 'service_diarize':
+            return handle_service_diarize(input_data)
+        elif action == 'service_combine':
+            return handle_service_combine(input_data)
+        elif action == 'get_task':
+            return handle_get_task(input_data)
+        elif action == 'get_all_tasks':
+            return handle_get_all_tasks(input_data)
+        elif action == 'delete_task':
+            return handle_delete_task(input_data)
+        elif action == 'health':
+            return handle_health()
+        elif action == 'health_live':
+            return handle_health_live()
+        elif action == 'health_ready':
+            return handle_health_ready()
+        else:
+            return {
+                'error': f'Unknown action: {action}',
+                'available_actions': [
+                    'speech_to_text', 'speech_to_text_url', 
+                    'service_transcribe', 'service_align', 'service_diarize', 'service_combine',
+                    'get_task', 'get_all_tasks', 'delete_task', 
+                    'health', 'health_live', 'health_ready'
+                ]
+            }
+            
+    except Exception as e:
+        logger.error(f"Handler error: {str(e)}")
+        return {'error': str(e)}
     try:
         input_data = event.get('input', {})
         action = input_data.get('action', 'health')
@@ -955,3 +1001,8 @@ def secure_filename(filename):
             "Filename is empty or contains only special characters after sanitization."
         )
     return filename
+
+# RunPod serverless start - this keeps the container alive and makes it serverless
+if __name__ == "__main__":
+    import runpod
+    runpod.serverless.start({"handler": handler})

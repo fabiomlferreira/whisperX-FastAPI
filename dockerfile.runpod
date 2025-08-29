@@ -36,6 +36,5 @@ RUN pip install --upgrade pip setuptools && uv pip install --system --no-cache-d
     # Clean pip cache and temporary files
     && rm -rf /root/.cache /tmp/*
 
-# For RunPod serverless, we just need the handler to be available
-# The entrypoint ensures the handler module is loaded and ready
-ENTRYPOINT ["python", "-c", "import handler; print('WhisperX FastAPI Handler loaded successfully for RunPod serverless')"]
+# For RunPod serverless, we run the handler.py file which keeps the container alive
+ENTRYPOINT ["python", "-u", "handler.py"]
