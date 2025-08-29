@@ -4,3 +4,9 @@ __pycache__
 *.db
 *.env
 .coverage
+
+# Virtual environments
+venv/
+venv310/
+venv*/
+*.pyc
