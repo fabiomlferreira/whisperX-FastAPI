@@ -235,7 +235,8 @@ curl -X POST "https://api.runpod.ai/v2/YOUR_ENDPOINT_ID/runsync" \
 2. **RunPod SDK**: Added `runpod.serverless.start()` to keep container alive
 3. **Dockerfile**: Updated to run `handler.py` instead of just importing
 4. **Requirements**: Added `runpod==1.7.9` package
-5. **Local testing**: Added `test_handler_local.py` for pre-deployment testing
+5. **Database initialization**: Added automatic table creation when container starts
+6. **Local testing**: Added `test_handler_local.py` for pre-deployment testing
 
 
 Para correr estou a correr o comando  source venv/bin/activate && python test_runpod.py 

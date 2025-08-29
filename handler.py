@@ -1004,5 +1004,12 @@ def secure_filename(filename):
 
 # RunPod serverless start - this keeps the container alive and makes it serverless
 if __name__ == "__main__":
+    # Initialize database tables first
+    from app.models import Base
+    from app.db import engine
+    Base.metadata.create_all(bind=engine)
+    print("Database tables created successfully")
+    
+    # Then start RunPod serverless
     import runpod
     runpod.serverless.start({"handler": handler})
