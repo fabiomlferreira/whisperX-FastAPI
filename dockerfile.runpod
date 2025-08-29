@@ -43,12 +43,7 @@ RUN pip install --upgrade pip setuptools && uv pip install --system --no-cache-d
     && rm -rf /root/.cache /tmp/*
 
 # Initialize database in persistent location
-RUN python -c "
-from app.models import Base
-from app.db import engine
-Base.metadata.create_all(bind=engine)
-print('Database initialized in persistent storage: /app/data/records.db')
-"
+RUN python -c "from app.models import Base; from app.db import engine; Base.metadata.create_all(bind=engine); print('Database initialized in persistent storage: /app/data/records.db')"
 
 # For RunPod serverless, we run the handler.py file which keeps the container alive
 ENTRYPOINT ["python", "-u", "handler.py"]
