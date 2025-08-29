@@ -221,6 +221,13 @@ python test_handler_local.py
 3. **Build context** should be `.` (root directory)
 4. **Deploy** and wait for container to build
 
+### 3. Persistent Storage Configuration
+Your `dockerfile.runpod` is configured with:
+- **Persistent database location**: `/app/data/records.db`
+- **Automatic table creation**: Database tables are created during build
+- **Data persistence**: Task data survives between API calls
+- **Long-running tasks**: Support for transcription monitoring and status checking
+
 ### 3. Test on RunPod
 ```bash
 # Test health endpoint
@@ -236,7 +243,8 @@ curl -X POST "https://api.runpod.ai/v2/YOUR_ENDPOINT_ID/runsync" \
 3. **Dockerfile**: Updated to run `handler.py` instead of just importing
 4. **Requirements**: Added `runpod==1.7.9` package
 5. **Database initialization**: Added automatic table creation when container starts
-6. **Local testing**: Added `test_handler_local.py` for pre-deployment testing
+6. **Persistent storage**: Configured database to use `/app/data` for persistent storage
+7. **Local testing**: Added `test_handler_local.py` for pre-deployment testing
 
 
 Para correr estou a correr o comando  source venv/bin/activate && python test_runpod.py 
