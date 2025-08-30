@@ -1,0 +1,33 @@
+{
+  "input": {
+    "action": "speech_to_text_url",
+    "url": "https://assets.noop.pt/output5m.mp3",
+    "model_params": {
+      "language": "pt",
+      "task": "transcribe",
+      "model": "tiny",
+      "device": "cpu",
+      "device_index": 0,
+      "threads": 0,
+      "batch_size": 8,
+      "chunk_size": 20,
+      "compute_type": "int8",
+      "interpolate_method": "nearest",
+      "return_char_alignments": false,
+      "beam_size": 5,
+      "best_of": 5,
+      "patience": 1,
+      "length_penalty": 1,
+      "temperatures": 0,
+      "compression_ratio_threshold": 2.4,
+      "log_prob_threshold": -1,
+      "no_speech_threshold": 0.6,
+      "suppress_tokens": -1,
+      "suppress_numerals": false
+    },
+    "vad_options": {
+      "vad_onset": 0.5,
+      "vad_offset": 0.363
+    }
+  }
+}
