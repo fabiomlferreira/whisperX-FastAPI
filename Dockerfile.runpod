@@ -1,0 +1,30 @@
+FROM python:3.11-slim
+
+ENV PYTHONUNBUFFERED=1 \
+    PIP_NO_CACHE_DIR=1
+
+# Install system dependencies (ffmpeg required by whisperx/audio)
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends \
+       ffmpeg \
+       git \
+    && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /app
+
+# Copy only dependency files first for better caching
+COPY requirements requirements/
+COPY requirements.txt requirements.txt
+
+# Install Python dependencies (CPU wheels by default)
+RUN pip install --upgrade pip setuptools \
+    && pip install -r requirements/system.txt \
+    && pip install -r requirements/prod.txt \
+    && pip install ctranslate2==4.6.0
+
+# Copy application code and handler
+COPY app app/
+COPY runpod_handler.py ./runpod_handler.py
+
+CMD ["python", "-u", "runpod_handler.py"]
+
