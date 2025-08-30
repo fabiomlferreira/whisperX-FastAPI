@@ -35,6 +35,44 @@ from app.whisperx_services import (
     transcribe_with_whisper,
 )
 from whisperx import assign_word_speakers
+from app.config import Config
+
+
+# Explicit defaults matching OpenAPI docs/schemas
+DEFAULTS_WHISPER = {
+    "language": Config.LANG or "en",  # default "en"
+    "task": "transcribe",
+    "model": (Config.WHISPER_MODEL or "tiny"),  # default "tiny"
+    "device": "cuda",  # doc default is "cuda"
+    "device_index": 0,
+    "threads": 0,
+    "batch_size": 8,
+    "chunk_size": 20,
+    "compute_type": "float16",  # doc default is "float16"
+}
+
+DEFAULTS_ALIGN = {
+    "align_model": None,
+    "interpolate_method": "nearest",
+    "return_char_alignments": False,
+}
+
+DEFAULTS_ASR = {
+    "beam_size": 5,
+    "best_of": 5,
+    "patience": 1.0,
+    "length_penalty": 1.0,
+    "temperatures": 0.0,
+    "compression_ratio_threshold": 2.4,
+    "log_prob_threshold": -1.0,
+    "no_speech_threshold": 0.6,
+    "suppress_tokens": [-1],
+    "suppress_numerals": False,
+    "initial_prompt": None,
+    "hotwords": None,
+}
+
+DEFAULTS_VAD = {"vad_onset": 0.5, "vad_offset": 0.363}
 
 
 def _download_to_temp(url: str) -> str:
@@ -181,10 +219,19 @@ def handler(event: Dict[str, Any]) -> Dict[str, Any]:
         vad_opts_in = data.get("vad_options", {})
 
         split = _split_params(model_params_in)
-        whisper_params = WhisperModelParams(**split["whisper"]) if split["whisper"] else WhisperModelParams()
-        align_params = AlignmentParams(**split["align"]) if split["align"] else AlignmentParams()
-        asr_options = ASROptions(**split["asr"]) if split["asr"] else ASROptions()
-        vad_options = VADOptions(**vad_opts_in) if vad_opts_in else VADOptions()
+        # Merge explicit defaults with provided values, then build Pydantic models.
+        whisper_params = WhisperModelParams(
+            **{**DEFAULTS_WHISPER, **(split["whisper"] or {})}
+        )
+        align_params = AlignmentParams(
+            **{**DEFAULTS_ALIGN, **(split["align"] or {})}
+        )
+        # normalize suppress_tokens one more time in case upstream sends -1
+        asr_input = {**DEFAULTS_ASR, **(split["asr"] or {})}
+        if isinstance(asr_input.get("suppress_tokens"), int):
+            asr_input["suppress_tokens"] = [asr_input["suppress_tokens"]]
+        asr_options = ASROptions(**asr_input)
+        vad_options = VADOptions(**({**DEFAULTS_VAD, **(vad_opts_in or {})}))
 
         tmp_path = _download_to_temp(url)
         logger.info("Downloaded input audio to %s", tmp_path)
